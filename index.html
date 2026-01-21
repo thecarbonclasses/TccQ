@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Carbon Classes | Class 10</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --main: #007bff; --wrong: #ff4b2b; --correct: #2ecc71; }
+        body { 
+            margin: 0; font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(rgba(240, 242, 245, 0.8), rgba(240, 242, 245, 0.8)), 
+                        url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: #333; overflow-x: hidden; position: relative; 
+        }
+        #bg-books { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: hidden; }
+        .book { position: absolute; font-size: 35px; opacity: 0.4; animation: float 8s infinite linear; }
+        @keyframes float { 0% { transform: translateY(110vh) rotate(0deg); } 100% { transform: translateY(-20vh) rotate(360deg); } }
+        .container { max-width: 600px; margin: 30px auto; padding: 25px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-radius: 25px; position: relative; z-index: 1; border: 1px solid #fff; }
+        .header { text-align: center; border-bottom: 3px solid var(--main); margin-bottom: 25px; padding-bottom: 10px; }
+        .timer-bar { width: 100%; height: 10px; background: #e0e0e0; border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        #progress { width: 100%; height: 100%; background: var(--main); transition: 1s linear; }
+        .opt-btn { background: #ffffff; padding: 16px; border-radius: 12px; cursor: pointer; margin-bottom: 12px; transition: 0.2s; border: 2px solid #eee; color: #444; font-weight: 500; font-size: 15px; }
+        .correct { background: var(--correct) !important; color: white; border-color: var(--correct); animation: explode 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .wrong { background: var(--wrong) !important; color: white; border-color: var(--wrong); animation: angry-vibrate 0.1s infinite; }
+        @keyframes explode { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes angry-vibrate { 0% { transform: translate(1px, 1px) rotate(0deg); } 50% { transform: translate(-1px, -1px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(1deg); } }
+        .feedback-emoji { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 120px; z-index: 100; pointer-events: none; display: none; }
+        .celebrate-pop { display: block !important; animation: pop-up 0.8s forwards; }
+        .angry-pop { display: block !important; animation: angry-zoom 0.8s forwards; }
+        @keyframes pop-up { 0% { transform: translate(-50%, 0%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -60%) scale(1.5); opacity: 1; } 100% { transform: translate(-50%, -70%) scale(1.2); opacity: 0; } }
+        @keyframes angry-zoom { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 30% { transform: translate(-50%, -50%) scale(1.8); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.4); } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
+        .report-item { border-bottom: 2px solid #eee; padding: 15px 0; font-size: 14px; line-height: 1.4; }
+        .res-q { font-weight: bold; color: #333; margin-bottom: 5px; display: block; }
+        .status-tag { font-weight: bold; padding: 2px 8px; border-radius: 5px; float: right; }
+        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; background: var(--main); color: white; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3); }
+    </style>
+</head>
+<body>
+
+<div id="bg-books"></div>
+<div id="feedback" class="feedback-emoji"></div>
+
+<div class="container" id="main-box">
+    <div class="header">
+        <h1 style="margin:0; color:var(--main);">THE CARBON CLASSES</h1>
+        <small style="letter-spacing: 1px; font-weight: bold; color: #555;">BOARD PREPARATION | 📞 8960687727</small>
+    </div>
+
+    <div id="screen-start">
+        <input type="text" id="student-name" style="width:100%; padding:15px; margin-bottom:20px; border-radius:10px; border:2px solid #ddd; box-sizing: border-box; font-size: 16px;" placeholder="Enter Student Name">
+        <button class="btn-main" onclick="startQuiz()">START TEST</button>
+    </div>
+
+    <div id="screen-quiz" style="display:none;">
+        <div style="display:flex; justify-content:space-between; color:var(--main); font-weight:bold;">
+            <span id="q-idx">Question 1</span>
+            <span id="timer-val">20s</span>
+        </div>
+        <div class="timer-bar"><div id="progress"></div></div>
+        <div id="q-text" style="font-size:19px; margin-bottom:25px; line-height:1.5; font-weight: 600;"></div>
+        <div id="opt-grid"></div>
+    </div>
+
+    <div id="screen-result" style="display:none; text-align:center;">
+        <h2 style="color:var(--main);">Final Marksheet</h2>
+        <div style="font-size: 55px; font-weight: bold; margin: 10px 0; color: #333;" id="score-val">0/0</div>
+        <div id="report-card" style="max-height: 400px; overflow-y: auto; background: #fff; padding: 15px; border-radius: 15px; text-align: left; border: 1px solid #eee; margin-bottom: 20px;"></div>
+        <button class="btn-main" onclick="location.reload()">RETAKE TEST</button>
+    </div>
+</div>
+
+<script>
+    // --- FIREBASE SETUP (IMPORTANT: Put your keys here) ---
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        databaseURL: "YOUR_DB_URL",
+        projectId: "YOUR_PROJECT_ID",
+        appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function createBooks() {
+        const bg = document.getElementById('bg-books');
+        const icons = ['📚', '🧪', '🧬', '📐', '✒️', '🎓'];
+        setInterval(() => {
+            const b = document.createElement('div');
+            b.className = 'book';
+            b.innerText = icons[Math.floor(Math.random()*icons.length)];
+            b.style.left = Math.random() * 100 + "vw";
+            bg.appendChild(b);
+            setTimeout(() => b.remove(), 8000);
+        }, 1200);
+    }
+    createBooks();
+
+    const quizData = [
+        { q: "A concave mirror (f=20cm) has an object at 30cm. What is the image distance (v)?", a: "-60 cm", o: ["-60 cm", "+60 cm", "-40 cm", "+30 cm"] },
+        { q: "The radius of curvature of a convex mirror is 40cm. If an object is at 20cm, find v?", a: "+10 cm", o: ["-10 cm", "+10 cm", "+20 cm", "-20 cm"] },
+        { q: "An object is 10cm from a plane mirror. What is the distance between object and image?", a: "20 cm", o: ["10 cm", "20 cm", "0 cm", "5 cm"] },
+        { q: "The refractive index (n) is 1.5. What is the speed of light in this medium?", a: "2 x 10^8 m/s", o: ["3 x 10^8 m/s", "2.25 x 10^8 m/s", "2 x 10^8 m/s", "1.5 x 10^8 m/s"] },
+        { q: "A convex lens (f=15cm) forms an image of the same size. What is the object distance (u)?", a: "-30 cm", o: ["-15 cm", "-30 cm", "-60 cm", "Infinity"] },
+        { q: "What is the critical angle for a glass slab with refractive index n=1.5?", a: "41.8°", o: ["45°", "41.8°", "30°", "90°"] },
+        { q: "Two lenses of power P1=+5D and P2=-3D are combined. What is the focal length (f)?", a: "50 cm", o: ["20 cm", "50 cm", "10 cm", "100 cm"] },
+        { q: "For a concave lens (f=20cm), the image distance is v=-10cm. What is u?", a: "-20 cm", o: ["-10 cm", "-20 cm", "-40 cm", "-5 cm"] },
+        { q: "If the magnification m = -1, which type of mirror is it?", a: "Concave Mirror", o: ["Convex Mirror", "Concave Mirror", "Plane Mirror", "None"] },
+        { q: "Object height is 5cm and m = +2. What is the height of the image?", a: "10 cm", o: ["2.5 cm", "5 cm", "10 cm", "-10 cm"] },
+        { q: "Incidence angle is 45° on a slab with n=1.414. What is the angle of refraction (r)?", a: "30°", o: ["45°", "60°", "30°", "0°"] },
+        { q: "The real depth of a pool is 4m. If n=1.33, what is the apparent depth?", a: "3 m", o: ["4 m", "5.33 m", "3 m", "2 m"] },
+        { q: "A concave mirror (f=10cm) forms a virtual image 2x larger. What is u?", a: "-5 cm", o: ["-5 cm", "-10 cm", "-15 cm", "-20 cm"] },
+        { q: "Light travels from Diamond (n=2.42) to glass (n=1.5). What is n21?", a: "0.62", o: ["1.61", "0.62", "3.63", "0.9"] },
+        { q: "How much time does sunlight take to cross a 2mm thick glass slab (n=1.5)?", a: "10^-11 s", o: ["10^-10 s", "10^-11 s", "10^-8 s", "10^-12 s"] },
+        { q: "If the focal length f = +25cm, what is the power (P) of the lens?", a: "+4 D", o: ["+4 D", "-4 D", "+0.4 D", "+2.5 D"] },
+        { q: "A ray strikes a mirror normally (i=0°). What is the angle of reflection?", a: "0°", o: ["90°", "180°", "0°", "45°"] },
+        { q: "An object is at C of a concave mirror. Where is the image formed?", a: "At C", o: ["At F", "At C", "Beyond C", "Between P and F"] },
+        { q: "In which mirror is the magnification m = +1 always true?", a: "Plane Mirror", o: ["Plane Mirror", "Convex Mirror", "Concave Mirror", "All"] }
+    ];
+
+    let current = 0, score = 0, timer, timeLeft = 20, userReport = [], studentName = "";
+
+    function startQuiz() {
+        studentName = document.getElementById('student-name').value;
+        if(!studentName) return alert("Please enter name!");
+        document.getElementById('screen-start').style.display = 'none';
+        document.getElementById('screen-quiz').style.display = 'block';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if(current >= quizData.length) return endQuiz();
+        timeLeft = 20;
+        document.getElementById('progress').style.transition = 'none';
+        document.getElementById('progress').style.width = '100%';
+        setTimeout(() => {
+            document.getElementById('progress').style.transition = '20s linear';
+            document.getElementById('progress').style.width = "0%";
+        }, 10);
+        
+        const data = quizData[current];
+        document.getElementById('q-idx').innerText = `Question ${current+1}/${quizData.length}`;
+        document.getElementById('q-text').innerText = data.q;
+        const grid = document.getElementById('opt-grid');
+        grid.innerHTML = "";
+        data.o.forEach(opt => {
+            const b = document.createElement('div');
+            b.className = 'opt-btn';
+            b.innerText = opt;
+            b.onclick = () => checkAns(b, opt, data.a);
+            grid.appendChild(b);
+        });
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-val').innerText = timeLeft + "s";
+            if(timeLeft <= 0) {
+                clearInterval(timer);
+                if(!userReport[current]) userReport.push({q: quizData[current].q, u: "Skipped", c: quizData[current].a, s: "Wrong"});
+                current++;
+                loadQuestion();
+            }
+        }, 1000);
+    }
+
+    function checkAns(btn, val, correct) {
+        clearInterval(timer);
+        const fb = document.getElementById('feedback');
+        const all = document.querySelectorAll('.opt-btn');
+        all.forEach(b => b.style.pointerEvents = 'none');
+        fb.classList.remove('celebrate-pop', 'angry-pop');
+        void fb.offsetWidth; 
+
+        if(val === correct) {
+            score++;
+            btn.classList.add('correct');
+            fb.innerText = "🎉"; fb.classList.add('celebrate-pop');
+            userReport[current] = {q: quizData[current].q, u: val, c: correct, s: "Correct"};
+        } else {
+            btn.classList.add('wrong');
+            fb.innerText = "😡"; fb.classList.add('angry-pop');
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+            all.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
+            userReport[current] = {q: quizData[current].q, u: val, c: correct, s: "Wrong"};
+        }
+
+        setTimeout(() => {
+            current++;
+            loadQuestion();
+        }, 1500);
+    }
+
+    function endQuiz() {
+        clearInterval(timer);
+        document.getElementById('screen-quiz').style.display = 'none';
+        document.getElementById('screen-result').style.display = 'block';
+        document.getElementById('score-val').innerText = `${score}/${quizData.length}`;
+        
+        // Save to Firebase
+        database.ref('QuizResults/' + studentName + "_" + Date.now()).set({
+            name: studentName,
+            score: score,
+            total: quizData.length,
+            time: new Date().toLocaleString()
+        });
+
+        let resHTML = "";
+        userReport.forEach((r, i) => {
+            resHTML += `<div class="report-item">
+                <span class="status-tag" style="color:${r.s=='Correct'?'#2ecc71':'#ff4b2b'}">${r.s=='Correct'?'✅':'❌'}</span>
+                <span class="res-q">Q${i+1}: ${r.q}</span>
+                <div style="font-size:13px;">Your: <b style="color:${r.s=='Correct'?'#2ecc71':'#ff4b2b'}">${r.u}</b> | Correct: <b>${r.c}</b></div>
+            </div>`;
+        });
+        document.getElementById('report-card').innerHTML = resHTML;
+    }
+</script>
+</body>
+</html>
