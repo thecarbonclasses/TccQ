@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCC Educational Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        .tcc-container { width: 90%; max-width: 500px; background: white; margin-top: 30px; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #1a73e8; margin-bottom: 20px; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        button { width: 95%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        button:hover { background-color: #1557b0; }
+        .hidden { display: none; }
+        .card { background: #fff; border: 1px solid #eee; padding: 15px; margin: 10px 0; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .card:hover { border-color: #1a73e8; background: #f8fbff; }
+        .score-box { font-weight: bold; color: #d93025; margin-top: 10px; }
+        .explanation { font-size: 14px; color: #5f6368; background: #f1f3f4; padding: 10px; border-radius: 5px; margin-top: 5px; display: none; }
+    </style>
+</head>
+<body>
+<div id="login-section" class="tcc-container">
+    <h1>The Carbon Classes</h1>
+    <input type="text" id="login-email" placeholder="Email or Username">
+    <input type="password" id="login-pass" placeholder="Password">
+    <button onclick="handleLogin()">Sign In</button>
+    <p>New here? <span style="color:blue; cursor:pointer;" onclick="toggleAuth()">Create Account</span></p>
+</div>
+
+<div id="signup-section" class="tcc-container hidden">
+    <h1>TCC Register</h1>
+    <input type="text" id="reg-user" placeholder="Create Username">
+    <input type="email" id="reg-email" placeholder="Enter Email">
+    <input type="password" id="reg-pass" placeholder="Create Password">
+    <button onclick="handleSignup()">Sign Up</button>
+    <p>Already have an account? <span style="color:blue; cursor:pointer;" onclick="toggleAuth()">Login</span></p>
+</div>
+
+<script>
+    // Navigation logic to switch between Login and Signup
+    const toggleAuth = () => {
+        document.getElementById('login-section').classList.toggle('hidden');
+        document.getElementById('signup-section').classList.toggle('hidden');
+    }
+
+    const handleLogin = () => {
+        const email = document.getElementById('login-email').value;
+        if(email) {
+            alert("TCC Login Success!");
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('board-section').classList.remove('hidden');
+        } else {
+            alert("Please enter details");
+        }
+    }
+
+    const handleSignup = () => {
+        alert("TCC Account Created! Please Login.");
+        toggleAuth();
+    }
+</script>
+<div id="board-section" class="tcc-container hidden">
+    <h1>Select Board</h1>
+    <div class="card" onclick="selectBoard('CBSE')">CBSE Board</div>
+    <div class="card" onclick="selectBoard('UP')">UP Board</div>
+</div>
+
+<div id="class-section" class="tcc-container hidden">
+    <h1>Select Class</h1>
+    <div class="card" onclick="selectClass('9th')">Class 9th</div>
+    <div class="card" onclick="selectClass('10th')">Class 10th</div>
+    <button onclick="goBack('board')">Back to Boards</button>
+</div>
+
+<script>
+    let userData = { board: '', class: '' };
+
+    function selectBoard(boardName) {
+        userData.board = boardName;
+        document.getElementById('board-section').classList.add('hidden');
+        document.getElementById('class-section').classList.remove('hidden');
+    }
+
+    function selectClass(className) {
+        userData.class = className;
+        document.getElementById('class-section').classList.add('hidden');
+        document.getElementById('main-dashboard').classList.remove('hidden');
+        loadDashboard(); // Function logic will be in next parts
+    }
+
+    function goBack(target) {
+        if(target === 'board') {
+            document.getElementById('class-section').classList.add('hidden');
+            document.getElementById('board-section').classList.remove('hidden');
+        }
+    }
+</script>
+<div id="main-dashboard" class="tcc-container hidden">
+    <h1 id="user-welcome">TCC Dashboard</h1>
+    <p id="user-info" style="font-style: italic; color: #666;"></p>
+    
+    <div class="card" style="background: #e3f2fd;" onclick="startScienceTest()">
+        <strong>Science MCQ Test</strong>
+        <p style="font-size:12px;">50 Dynamic Questions with Negative Marking</p>
+    </div>
+
+    <div class="card" style="background: #fff3e0;" onclick="showNotes()">
+        <strong>Chapter Notes</strong>
+        <p style="font-size:12px;">Read and Learn for Class 9/10</p>
+    </div>
+
+    <div class="card" style="background: #e8f5e9;" onclick="openOnlineClass()">
+        <strong>Live Online Classes</strong>
+        <p style="font-size:12px;">Join TCC Interactive Sessions</p>
+    </div>
+
+    <div class="card" style="background: #fce4ec;" onclick="startMegaTest()">
+        <strong>Mega Science (100 Qs)</strong>
+        <p style="font-size:12px;">Full Science Syllabus Challenge</p>
+    </div>
+
+    <div id="score-display" class="score-box"></div>
+    <button onclick="logout()" style="background:#666;">Logout</button>
+</div>
+
+<script>
+    function loadDashboard() {
+        document.getElementById('user-info').innerText = `Board: ${userData.board} | Class: ${userData.class}`;
+    }
+
+    function logout() {
+        location.reload(); // Simple refresh to reset for security
+    }
+
+    function showNotes() {
+        alert("Loading TCC Notes for " + userData.class + "...");
+    }
+
+    function openOnlineClass() {
+        alert("Redirecting to TCC Live Classroom...");
+        // Future logic for video/streaming links
+    }
+</script>
+<div id="test-section" class="tcc-container hidden">
+    <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
+        <span>Questions: <span id="q-count">0/50</span></span>
+        <span style="color: red;">Negative: -0.25</span>
+    </div>
+    <hr>
+    <div id="question-area">
+        <h3 id="current-question">Loading Question...</h3>
+        <div id="options-container">
+            </div>
+    </div>
+    <div id="explanation-box" class="explanation"></div>
+    <button id="next-btn" class="hidden" onclick="loadNextQuestion()">Next Question</button>
+    <button onclick="exitTest()" style="background:#666; margin-top:20px;">Quit Test</button>
+</div>
+
+<script>
+    let currentScore = 0;
+    let questionIndex = 0;
+    let questionsData = [];
+
+    // TCC Negative Marking Logic
+    const updateScore = (isCorrect) => {
+        if(isCorrect) {
+            currentScore += 1;
+        } else {
+            currentScore -= 0.25;
+        }
+        document.getElementById('score-display').innerText = "Current Score: " + currentScore.toFixed(2);
+    }
+
+    function startScienceTest() {
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('test-section').classList.remove('hidden');
+        fetchQuestions(); // Logic to get data from internet
+    }
+
+    function exitTest() {
+        if(confirm("TCC: Are you sure you want to quit?")) {
+            document.getElementById('test-section').classList.add('hidden');
+            document.getElementById('main-dashboard').classList.remove('hidden');
+        }
+    }
+</script>
+<script>
+    // TCC Logic: Internet se sawal fetch karne ka function
+    async function fetchQuestions() {
+        document.getElementById('current-question').innerText = "TCC is fetching fresh questions from internet...";
+        try {
+            // Yahan hum internet API ka use kar rahe hain (Example API)
+            // Asli system mein aap apna custom JSON link bhi daal sakte hain
+            const response = await fetch('https://opentdb.com/api.php?amount=50&category=17&type=multiple');
+            const data = await response.json();
+            questionsData = data.results;
+            questionIndex = 0;
+            displayQuestion();
+        } catch (error) {
+            document.getElementById('current-question').innerText = "Check Internet Connection!";
+        }
+    }
+
+    function displayQuestion() {
+        const q = questionsData[questionIndex];
+        document.getElementById('q-count').innerText = `${questionIndex + 1}/50`;
+        document.getElementById('current-question').innerHTML = q.question;
+        document.getElementById('explanation-box').style.display = 'none';
+        document.getElementById('next-btn').classList.add('hidden');
+        
+        const options = [...q.incorrect_answers, q.correct_answer].sort(() => Math.random() - 0.5);
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerHTML = opt;
+            btn.style.background = "white";
+            btn.style.color = "black";
+            btn.style.border = "1px solid #ddd";
+            btn.onclick = () => checkAnswer(opt, q.correct_answer, q.question);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct, questionText) {
+        const isCorrect = (selected === correct);
+        updateScore(isCorrect);
+        
+        // Smart Explanation Logic using Internet/Pre-defined logic
+        const expBox = document.getElementById('explanation-box');
+        expBox.style.display = 'block';
+        if(isCorrect) {
+            expBox.innerHTML = `<b style="color:green;">Correct!</b> TCC Explanation: Your choice is scientifically proven.`;
+            expBox.style.borderLeft = "5px solid green";
+        } else {
+            expBox.innerHTML = `<b style="color:red;">Wrong!</b> Correct Ans: ${correct}<br>TCC Explanation: As per Science, ${correct} is the right answer for this query.`;
+            expBox.style.borderLeft = "5px solid red";
+        }
+        
+        document.getElementById('next-btn').classList.remove('hidden');
+        // Disable all option buttons after selection
+        const btns = document.getElementById('options-container').getElementsByTagName('button');
+        for(let b of btns) b.disabled = true;
+    }
+
+    function loadNextQuestion() {
+        questionIndex++;
+        if(questionIndex < 50) {
+            displayQuestion();
+        } else {
+            alert("TCC: Test Completed! Your Final Score: " + currentScore.toFixed(2));
+            exitTest();
+        }
+    }
+</script>
+<script>
+    let isMegaTest = false;
+
+    // TCC Mega Test Function (100 Questions)
+    async function startMegaTest() {
+        isMegaTest = true;
+        currentScore = 0;
+        questionIndex = 0;
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('test-section').classList.remove('hidden');
+        document.getElementById('current-question').innerText = "TCC Mega Test: Preparing 100 Questions...";
+        
+        try {
+            // Mega Test ke liye 100 questions fetch karna
+            const response = await fetch('https://opentdb.com/api.php?amount=100&category=17&type=multiple');
+            const data = await response.json();
+            questionsData = data.results;
+            displayQuestion();
+        } catch (error) {
+            alert("TCC Error: Internet connection needed for Mega Test.");
+            exitTest();
+        }
+    }
+
+    // Scoreboard ko update aur save karne ka logic
+    function saveFinalScore() {
+        const testType = isMegaTest ? "Mega Science" : "Chapter Test";
+        const finalResult = {
+            date: new Date().toLocaleDateString(),
+            score: currentScore.toFixed(2),
+            type: testType,
+            class: userData.class
+        };
+        
+        // Browser memory mein score save karna
+        let history = JSON.parse(localStorage.getItem('tcc_scores')) || [];
+        history.push(finalResult);
+        localStorage.setItem('tcc_scores', JSON.stringify(history));
+        
+        showScoreHistory();
+    }
+
+    function showScoreHistory() {
+        let history = JSON.parse(localStorage.getItem('tcc_scores')) || [];
+        let scoreHTML = "<h3>TCC Recent Scores:</h3>";
+        history.slice(-5).reverse().forEach(item => {
+            scoreHTML += `<p style="font-size:13px; border-bottom:1px solid #eee;">
+                ${item.date} - <b>${item.score}</b> (${item.type} - ${item.class})
+            </p>`;
+        });
+        document.getElementById('score-display').innerHTML = scoreHTML;
+    }
+
+    // Dashboard load hone par history dikhana
+    const originalLoadDashboard = loadDashboard;
+    loadDashboard = function() {
+        originalLoadDashboard();
+        showScoreHistory();
+    };
+</script>
+<div id="content-section" class="tcc-container hidden">
+    <h1 id="content-title">TCC Resource</h1>
+    <div id="content-body" style="text-align: left; background: #fff; padding: 15px; border-radius: 8px;">
+        </div>
+    <button onclick="backToDash()" style="margin-top:20px; background:#444;">Back to Dashboard</button>
+</div>
+
+<script>
+    // TCC Online Class Logic
+    function openOnlineClass() {
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('content-section').classList.remove('hidden');
+        document.getElementById('content-title').innerText = "TCC Live / Online Classes";
+        document.getElementById('content-body').innerHTML = `
+            <div style="background:#000; color:#fff; height:200px; display:flex; align-items:center; justify-content:center; border-radius:8px;">
+                <p>Live Stream / Zoom / YouTube API will load here</p>
+            </div>
+            <h3>Upcoming Classes:</h3>
+            <ul>
+                <li>Science: Physics - Class 10 (7:00 PM)</li>
+                <li>Science: Biology - Class 9 (8:30 PM)</li>
+            </ul>
+        `;
+    }
+
+    // TCC Notes Logic
+    function showNotes() {
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('content-section').classList.remove('hidden');
+        document.getElementById('content-title').innerText = "TCC Chapter Notes";
+        document.getElementById('content-body').innerHTML = `
+            <h4>${userData.class} - ${userData.board} Board</h4>
+            <div class="card">Chapter 1: Matter in Our Surroundings (PDF)</div>
+            <div class="card">Chapter 2: Atoms and Molecules (Notes)</div>
+            <p><i>More notes will be synced from TCC cloud...</i></p>
+        `;
+    }
+
+    function backToDash() {
+        document.getElementById('content-section').classList.add('hidden');
+        document.getElementById('main-dashboard').classList.remove('hidden');
+    }
+</script>
+<div id="notice-section" class="tcc-container">
+    <h2 style="color: #d93025;">📢 TCC Updates & Notices</h2>
+    <div id="notices-list" style="text-align: left; font-size: 14px;">
+        <div class="card" style="border-left: 5px solid #1a73e8;">
+            <b>New Update:</b> Class 9th and 10th Science Batch starting soon!
+        </div>
+        <div class="card" style="border-left: 5px solid #34a853;">
+            <b>Exam Tip:</b> Focus on Chemical Reactions for the next test.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Negative marking logic reminder (One-liner as requested)
+    const getPenalty = (wrongCount) => wrongCount * 0.25; 
+</script>
+<div id="doubt-section" class="tcc-container">
+    <h2>❓ Ask a Doubt</h2>
+    <p style="font-size: 12px; color: #666;">Students can send their science queries to TCC here.</p>
+    <input type="text" id="doubt-subject" placeholder="Chapter Name (e.g. Atoms)">
+    <textarea id="doubt-text" style="width: 90%; height: 80px; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" placeholder="Type your question here..."></textarea>
+    <button onclick="sendDoubt()" style="background: #34a853;">Send to TCC</button>
+</div>
+
+<script>
+    // TCC Doubt Submission Logic
+    function sendDoubt() {
+        const sub = document.getElementById('doubt-subject').value;
+        const msg = document.getElementById('doubt-text').value;
+        if(sub && msg) {
+            alert("TCC: Your doubt about '" + sub + "' has been sent successfully!");
+            document.getElementById('doubt-subject').value = '';
+            document.getElementById('doubt-text').value = '';
+        } else {
+            alert("Please fill both fields.");
+        }
+    }
+
+    // One-liner for TCC Negative marking total
+    const totalDeduction = (wrongs) => `Total marks lost: ${wrongs * 0.25}`;
+</script>
+<script>
+    // TCC Hindi Question Bank for UP Board
+    const tccHindiBank = [
+        { q: "विद्युत धारा का मात्रक क्या है?", a: "एम्पियर", opt: ["एम्पियर", "वोल्ट", "ओम", "वाट"], exp: "विद्युत धारा को एम्पियर में मापा जाता है।" },
+        { q: "लोहे पर जंग लगना किस प्रकार की अभिक्रिया है?", a: "रासायनिक", opt: ["भौतिक", "रासायनिक", "दोनों", "कोई नहीं"], exp: "ऑक्सीकरण के कारण यह एक रासायनिक परिवर्तन है।" },
+        { q: "कोशिका का 'पावर हाउस' किसे कहा जाता है?", a: "माइटोकॉन्ड्रिया", opt: ["केंद्रक", "माइटोकॉन्ड्रिया", "राइबोसोम", "लाइसोसोम"], exp: "माइटोकॉन्ड्रिया एटीपी के रूप में ऊर्जा बनाता है।" }
+    ];
+
+    // Purane fetch function ko UP Board ke liye modify kar rahe hain
+    const originalFetch = fetchQuestions;
+    fetchQuestions = async function() {
+        if (userData.board === 'UP') {
+            document.getElementById('current-question').innerText = "TCC: हिंदी सवाल लोड हो रहे हैं...";
+            setTimeout(() => {
+                questionsData = tccHindiBank.map(item => ({
+                    question: item.q,
+                    correct_answer: item.a,
+                    incorrect_answers: item.opt.filter(o => o !== item.a),
+                    explanation: item.exp
+                }));
+                questionIndex = 0;
+                displayQuestion();
+            }, 1000);
+        } else {
+            // Agar CBSE hai to wahi purana internet wala system chalega
+            await originalFetch();
+        }
+    };
+
+    // One-liner to check language
+    const checkLang = () => userData.board === 'UP' ? "Hindi Mode" : "English Mode";
+</script>
+<script>
+    // TCC Logic: Answer check karte waqt Hindi explanation dikhane ke liye modification
+    const originalCheckAnswer = checkAnswer;
+    
+    checkAnswer = function(selected, correct, questionText) {
+        // Purane logic ko call kar rahe hain
+        originalCheckAnswer(selected, correct, questionText);
+        
+        const expBox = document.getElementById('explanation-box');
+        
+        // Agar UP Board hai to explanation ko Hindi bank se uthayenge
+        if(userData.board === 'UP') {
+            const hindiQ = tccHindiBank.find(item => item.q === questionText);
+            if(hindiQ) {
+                expBox.innerHTML = selected === correct 
+                    ? `<b style="color:green;">सही उत्तर!</b><br>TCC व्याख्या: ${hindiQ.exp}`
+                    : `<b style="color:red;">गलत जवाब!</b><br>सही उत्तर: ${correct}<br>TCC व्याख्या: ${hindiQ.exp}`;
+            }
+        }
+    };
+
+    // One-liner for result status
+    const getTCCStatus = (score) => score >= 35 ? "Pass (TCC Certified)" : "Needs Improvement";
+</script>
+<div id="search-section" class="tcc-container hidden">
+    <h2>🔍 Search TCC Resources</h2>
+    <input type="text" id="tcc-search-input" onkeyup="filterContent()" placeholder="Search topics (e.g. Physics, Atoms)...">
+    <div id="search-results" style="text-align: left; margin-top: 15px;">
+        </div>
+    <button onclick="backToDash()" style="background:#444;">Back</button>
+</div>
+
+<script>
+    // TCC Search Logic
+    function openSearch() {
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('search-section').classList.remove('hidden');
+    }
+
+    function filterContent() {
+        let input = document.getElementById('tcc-search-input').value.toLowerCase();
+        let results = document.getElementById('search-results');
+        let data = ["Physics: Light Reflection", "Chemistry: Chemical Reactions", "Biology: Life Processes", "Physics: Electricity", "UP Board: Hindi Vigyan"];
+        
+        let filtered = data.filter(item => item.toLowerCase().includes(input));
+        results.innerHTML = filtered.map(item => `<div class="card">${item}</div>`).join('');
+        
+        if(input === "") results.innerHTML = "<p style='color:#999;'>Type to search TCC materials...</p>";
+    }
+
+    // One-liner for TCC Search status
+    const isSearching = () => document.getElementById('tcc-search-input').value.length > 0 ? "Searching..." : "Idle";
+</script>
+<script>
+    // TCC Dashboard ko update karne ka naya function
+    function updateTCCDashboard() {
+        const dash = document.getElementById('main-dashboard');
+        
+        // Naye buttons add karna (Search aur Doubt ke liye)
+        const extraButtons = `
+            <div class="card" style="background: #f3e5f5;" onclick="openSearch()">
+                <strong>🔍 Search TCC Library</strong>
+                <p style="font-size:12px;">Find notes and questions instantly</p>
+            </div>
+            <div class="card" style="background: #fffde7;" onclick="scrollToDoubt()">
+                <strong>❓ Ask TCC Teacher</strong>
+                <p style="font-size:12px;">Send your doubts directly to us</p>
+            </div>
+        `;
+        
+        // Dashboard mein buttons insert karna (Logout button se pehle)
+        const logoutBtn = dash.querySelector('button[onclick="logout()"]');
+        const div = document.createElement('div');
+        div.innerHTML = extraButtons;
+        dash.insertBefore(div, logoutBtn);
+    }
+
+    function scrollToDoubt() {
+        document.getElementById('doubt-section').scrollIntoView({behavior: 'smooth'});
+    }
+
+    // Page load hote hi dashboard update kar dena
+    window.onload = function() {
+        updateTCCDashboard();
+        if(typeof loadDashboard === 'function') loadDashboard();
+    };
+
+    // One-liner for TCC branding
+    const getTCCFooter = () => "TCC: Empowering UP & CBSE Students 2026";
+</script>
+<div id="result-card" class="tcc-container hidden">
+    <h2 style="color: #1a73e8;">🏆 TCC Final Result</h2>
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0;">
+        <p>Student: <b>TCC User</b></p>
+        <p>Total Marks: <span id="final-score">0</span></p>
+        <p>Status: <b id="pass-fail-status">N/A</b></p>
+    </div>
+    <button onclick="backToDashFromResults()" style="background: #34a853;">Take Another Test</button>
+</div>
+
+<script>
+    // Result dikhane ka logic
+    function showTCCResult() {
+        document.getElementById('test-section').classList.add('hidden');
+        document.getElementById('result-card').classList.remove('hidden');
+        
+        document.getElementById('final-score').innerText = currentScore.toFixed(2);
+        
+        const status = currentScore >= 20 ? "PASS ✅" : "NEEDS IMPROVEMENT ❌";
+        document.getElementById('pass-fail-status').innerText = status;
+        document.getElementById('pass-fail-status').style.color = currentScore >= 20 ? "green" : "red";
+        
+        saveFinalScore(); // Score history mein save karne ke liye
+    }
+
+    function backToDashFromResults() {
+        document.getElementById('result-card').classList.add('hidden');
+        document.getElementById('main-dashboard').classList.remove('hidden');
+    }
+
+    // One-liner to show final success message
+    const printTCCSuccess = () => console.log("TCC Learning Portal: All systems go!");
+    printTCCSuccess();
+</script>
+
+<footer style="text-align: center; padding: 20px; font-size: 11px; color: #aaa;">
+    <p>TCC <b>| The Carbon Classes</b> | 2020</p>
+</footer>
+
+</body>
+</html>
+
